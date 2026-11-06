@@ -1,6 +1,8 @@
 #!/bin/zsh
 # Builds d4vAgentBar.app (release, ad-hoc signed) in ./build.
-# Usage: ./build-app.sh [--install]   (--install copies it to /Applications and launches it)
+# Usage: ./build-app.sh [--install|--release]
+#   --install  copies it to /Applications and launches it
+#   --release  universal build (Apple Silicon + Intel) zipped as build/d4vAgentBar-<version>.zip
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -8,8 +10,12 @@ APP_NAME="d4vAgentBar"
 BUNDLE_ID="com.github.dcourtin.d4vagentbar"
 VERSION="0.1.0"
 
-swift build -c release
-BIN="$(swift build -c release --show-bin-path)/D4vAgentBar"
+MODE="${1:-}"
+BUILD_ARGS=(-c release)
+[[ "$MODE" == "--release" ]] && BUILD_ARGS+=(--arch arm64 --arch x86_64)
+
+swift build "${BUILD_ARGS[@]}"
+BIN="$(swift build "${BUILD_ARGS[@]}" --show-bin-path)/D4vAgentBar"
 
 APP="build/$APP_NAME.app"
 rm -rf "$APP"
@@ -38,7 +44,14 @@ PLIST
 codesign --force --sign - "$APP"
 echo "Built $APP"
 
-if [[ "${1:-}" == "--install" ]]; then
+if [[ "$MODE" == "--release" ]]; then
+    ZIP="build/$APP_NAME-$VERSION.zip"
+    rm -f "$ZIP"
+    ditto -c -k --keepParent "$APP" "$ZIP"
+    echo "Packaged $ZIP"
+fi
+
+if [[ "$MODE" == "--install" ]]; then
     pkill -x "$APP_NAME" 2>/dev/null || true
     rm -rf "/Applications/$APP_NAME.app"
     cp -R "$APP" /Applications/

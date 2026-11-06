@@ -18,6 +18,17 @@ C'est une commande locale : aucun appel au modèle, aucun quota consommé. L'app
 - **Agents** : processus `claude` en cours, avec leur dossier et leur âge (en orange au-delà d'un jour). Au survol, ✕ ferme la session proprement (SIGTERM, comme `kill <pid>` ; `claude --resume` la rouvre). Les sessions de l'app Claude, marquées « app », se ferment depuis l'app.
 - **Settings (⌘,)** : pourcentage dans la barre de menus, fréquence de rafraîchissement, lancement à l'ouverture de session.
 
+## Installer le build
+
+1. Télécharger `d4vAgentBar-<version>.zip` depuis les [Releases](https://github.com/dcourtin/d4vagentbar/releases), le décompresser et glisser `d4vAgentBar.app` dans `/Applications`.
+2. L'app n'est pas notarisée par Apple : au premier lancement, macOS la bloque. Soit **Réglages Système → Confidentialité et sécurité → « Ouvrir quand même »**, soit en une commande :
+
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/d4vAgentBar.app
+   ```
+
+Binaire universel (Apple Silicon et Intel), macOS 14 ou plus.
+
 ## Prérequis
 
 - macOS 14 ou plus, Swift 6 (Xcode ou Command Line Tools)
@@ -28,6 +39,7 @@ C'est une commande locale : aucun appel au modèle, aucun quota consommé. L'app
 ```bash
 ./build-app.sh            # crée build/d4vAgentBar.app
 ./build-app.sh --install  # copie dans /Applications et lance l'app
+./build-app.sh --release  # binaire universel + build/d4vAgentBar-<version>.zip
 ```
 
 Tests du parseur :

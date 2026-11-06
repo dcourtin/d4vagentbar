@@ -38,6 +38,17 @@ final class UsageParserTests: XCTestCase {
         XCTAssertEqual(UsageParser.parseResetDate("12:30am (UTC)", now: now), date("2026-12-31T00:30:00Z"))
     }
 
+    func testElapsedAndAge() {
+        XCTAssertEqual(AgentMonitor.parseElapsed("05:07"), 307)
+        XCTAssertEqual(AgentMonitor.parseElapsed("01:02:03"), 3_723)
+        XCTAssertEqual(AgentMonitor.parseElapsed("8-00:00:10"), 8 * 86_400 + 10)
+        XCTAssertNil(AgentMonitor.parseElapsed("abc"))
+        let now = date("2026-11-05T12:00:00Z")
+        XCTAssertEqual(AgentRow.age(since: now.addingTimeInterval(-8 * 86_400 - 5), now: now), "8d")
+        XCTAssertEqual(AgentRow.age(since: now.addingTimeInterval(-3 * 3_600), now: now), "3h")
+        XCTAssertEqual(AgentRow.age(since: now.addingTimeInterval(-20), now: now), "1m")
+    }
+
     func testCountdown() {
         let now = date("2026-11-05T12:00:00Z")
         XCTAssertEqual(UsageParser.countdown(to: now.addingTimeInterval(4 * 86_400 + 21 * 3_600 + 50), now: now), "4d 21h")

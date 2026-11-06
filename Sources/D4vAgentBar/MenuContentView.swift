@@ -158,16 +158,60 @@ struct MenuContentView: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 10)
                 ForEach(agents.agents) { agent in
-                    HStack(spacing: 6) {
-                        Circle().fill(.green).frame(width: 6, height: 6)
-                        Text(agent.name).font(.system(size: 13)).lineLimit(1)
-                        Spacer()
-                    }
-                    .padding(.horizontal, 10)
-                    .help(agent.folder ?? "")
+                    AgentRow(agent: agent) { agents.stop(agent) }
                 }
             }
         }
+    }
+}
+
+/// One running session: folder name and age; on hover, a ✕ that stops it.
+/// Desktop-app sessions get no ✕: they are stopped from the Claude app.
+struct AgentRow: View {
+    let agent: AgentMonitor.Agent
+    let onStop: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Circle().fill(.green).frame(width: 6, height: 6)
+            Text(agent.name).font(.system(size: 13)).lineLimit(1)
+            if agent.isDesktopApp {
+                Text("app").font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
+                    .padding(.horizontal, 4).padding(.vertical, 1)
+                    .background(Capsule().fill(Color.primary.opacity(0.08)))
+            }
+            Spacer()
+            if hovering, !agent.isDesktopApp {
+                Button(action: onStop) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Stop this session (kill \(agent.id))")
+            } else if let started = agent.startedAt {
+                TimelineView(.periodic(from: .now, by: 60)) { context in
+                    Text(Self.age(since: started, now: context.date))
+                        .font(.system(size: 12))
+                        .foregroundStyle(context.date.timeIntervalSince(started) > 86_400 ? Color.orange : Color.secondary)
+                        .monospacedDigit()
+                }
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 1)
+        .contentShape(Rectangle())
+        .onHover { hovering = $0 }
+        .help(agent.folder ?? "")
+    }
+
+    /// "8d", "3h", "12m".
+    static func age(since date: Date, now: Date) -> String {
+        let s = max(0, Int(now.timeIntervalSince(date)))
+        if s >= 86_400 { return "\(s / 86_400)d" }
+        if s >= 3_600 { return "\(s / 3_600)h" }
+        return "\(max(1, s / 60))m"
     }
 }
 

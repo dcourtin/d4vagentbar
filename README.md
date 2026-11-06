@@ -15,7 +15,7 @@ claude -p "/usage" --output-format json --no-session-persistence
 C'est une commande locale : aucun appel au modèle, aucun quota consommé. L'app lit les lignes `Current session: 8% used · resets …` et calcule le temps restant avant réinitialisation. Rafraîchissement toutes les 5 minutes (réglable) et à l'ouverture du menu.
 
 - **Keep Awake For** : assertion IOKit (comme `caffeinate`) pour 15 min → 8 h ou sans limite, avec ou sans l'écran.
-- **Agents** : processus `claude` en cours, avec le nom de leur dossier de travail.
+- **Agents** : processus `claude` en cours, avec leur dossier et leur âge (en orange au-delà d'un jour). Au survol, ✕ ferme la session proprement (SIGTERM, comme `kill <pid>` ; `claude --resume` la rouvre). Les sessions de l'app Claude, marquées « app », se ferment depuis l'app.
 - **Settings (⌘,)** : pourcentage dans la barre de menus, fréquence de rafraîchissement, lancement à l'ouverture de session.
 
 ## Prérequis
